@@ -55,4 +55,6 @@ wheel==0.37.1
 yapf==0.31.0
 yfinance==0.1.87
 zipp==3.8.0
+seaborn==0.12.1
+
 
