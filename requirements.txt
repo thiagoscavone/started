@@ -60,5 +60,3 @@ fundamentus==0.2.0
 numpy==1.23.4
 vectorbt==0.24.3
 statsmodels==0.13.5
-
-
