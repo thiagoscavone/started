@@ -15,9 +15,21 @@ import pandas as pd
 import yfinance as yf
 import seaborn as sns
 import matplotlib.pyplot as plt
-from datetime import date
+
 import plotly.graph_objects as go
 import fundamentus as fd
+
+import statsmodels
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import coint, adfuller
+import vectorbt as vbt
+from plotly.subplots import make_subplots
+
+from datetime import date, timedelta
+import datetime
+
+
 
 def home():
     st.markdown('---')
@@ -283,12 +295,246 @@ def Fundamentos():
                         st.write('**Dividend Yield:** ', f"{info_papel3['Div_Yield'][0]}")
 
 
+
+def longshort():
+    st.markdown('---')
+    st.title('Teste de Long & Short')
+    st.markdown('---')
+    
+    '''escolha dos ativos para gerar a analise de long short'''
+    lista_tickers = fd.list_papel_all()
+    ativo1 = st.selectbox('Selecione o Ativo 1', lista_tickers)
+    ativo2 = st.selectbox('Selecione o Ativo 2', lista_tickers) 
+    st.markdown('---')   
+    
+    '''escolha das datas iniciais e final'''
+    data_inicial = st.date_input(
+     "Qual a data inicial?",
+    datetime.date(2019, 7, 6))
+    st.write('A data escolhida é:', data_inicial)
+    
+    today = date.today()
+    #data_final=today
+    data_final = st.date_input(
+     "Qual a data final?",
+    (today))
+    st.write('A data escolhida é:', data_final)
+    
+    #tratando as datas para o yf poder ler
+    format(data_inicial, "%Y-%m-%d")
+    format(data_final, "%Y-%m-%d")
+    
+    #VERFICANDO O FORMATO DA DATA
+    #st.write('A data escolhida é:', data_inicial)
+    #st.write('A data escolhida é:', data_final)
+    
+    #ACRESCENTANDO O '.SA' PARA YF ENTENDER OS ATIVOS
+    tickers = [ativo1, ativo2]
+    tickers = [i + '.SA' for i in tickers]
+     #criando o dataframe - executando o download, colocando data, ativo1 e ativo2;
+     #definindo o index como date.
+    ativos = pd.DataFrame()
+     
+    for i in tickers:
+     
+       df = yf.download(i, start=data_inicial, end=data_final)['Adj Close']
+       df.rename(i, inplace=True)
+       ativos = pd.concat([ativos,df], axis=1)
+       ativos.index.name='Date'
+     
+    st.dataframe(ativos)
+    
+    
+    # O Gráfico fica dinamico 
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos[ativo1 + '.SA'], name=ativo1))
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos[ativo2 + '.SA'], name=ativo2))
+    fig.update_layout(title_text='Preços', template='simple_white')
+    #plot(fig)
+    #fig.to_image(format="png", engine="kaleido")
+   # fig.write_image("images/fig1.png")
+    st.plotly_chart(fig)  
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ativos[ativo1 + '.SA'], y=ativos[ativo2 + '.SA'], mode='markers'))
+    fig.update_layout(title_text='Preços', showlegend=True, legend_title_text=ativo1+' x '+ativo2, template='simple_white')
+    #fig.to_image(format="png", engine="kaleido")
+    #fig.write_image("images/fig2.png")
+    st.plotly_chart(fig)  
+        
+    #calculando os retornos    
+    retornos = ativos.pct_change()
+    
+    #Testando Cointegração
+    ativos.dropna(inplace=True)
+    
+    #facilitar a vida e testar se funcionaria esse enjambre rs
+    ativoA=ativo1 + '.SA'
+    ativoB=ativo2 + '.SA'
+   
+    #st.write((ativos[ativo1 + '.SA'], ativos[ativo2 + '.SA']))
+    score, pvalue, _ = coint(ativos[ativoA],ativos[ativoB])
+    #valor de pValue
+    st.write('pValue é: ',pvalue)        
+    
+        
+    #Calxulando o Spread
+    X1 = ativos[ativoA]
+    X2 = ativos[ativoB]
+    
+    X1 = sm.add_constant(X1)
+    resultado = sm.OLS(X2, X1).fit()
+    X1 = X1[ativoA]
+    beta = resultado.params[ativoA]
+    
+    spread = X2 - beta*X1
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=spread.index, y=spread, name='Spread'))
+    fig.update_layout(title_text='Spread', template='simple_white')
+    #fig.to_image(format="png", engine="kaleido")
+    #fig.write_image("images/fig_spread.png")
+    #fig.show()
+    st.plotly_chart(fig)  
+    
+        
+    teste = adfuller(spread)
+    st.write('---')
+    st.write('esse é o valor do ADFtest', teste[1])
+    st.write('---')
+    
+    #Métrica que nos diz quantos desvios o valor está distante em relação 
+    #à média, facilitando a criação de um trigger para o trading de pares
+    
+    z_score = (spread - spread.mean())/np.std(spread)
+        
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=z_score.index, y=z_score, name='Z_Score'))
+    fig.update_layout(title_text='Z_Score', template='simple_white')
+    #fig.to_image(format="png", engine="kaleido")
+    #fig.write_image("images/fig_z_score.png")
+    #fig.show()
+    st.plotly_chart(fig)  
+    
+    #Ajustando para colocar os desvios padrões
+    ativos['cte']=''
+    ativos['cte2']=''
+    ativos['cte']=2
+    ativos['cte2']=-2
+    
+    
+    #GERAÇÃO DE GRÁFICO DE ANALISE DE z_score E desvio padrão
+    fig = make_subplots(rows=2, cols=1)
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos[ativoA], name=ativoA),row=1, col=1)
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos[ativoB], name=ativoB),row=1, col=1)
+    #adaptando
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos['cte'], name='dsv+2'),row=2, col=1)
+    fig.add_trace(go.Scatter(x=ativos.index, y=ativos['cte2'],name='dsv-2'),row=2, col=1)
+    fig.add_trace(go.Scatter(x=z_score.index, y=z_score, name='Z_Score'),row=2, col=1)
+    fig.update_layout(title_text='Análise Z_Score', template='simple_white',height=1000, width=1100)
+    st.plotly_chart(fig)  
+       
+    """
+    Definir o threshold do z-score
+    
+    z-score > threshold = vender ação X2 e comprar ação X1 (SHORT THE SPREAD)
+    
+    z-score < threshold = comprar ação X2 e vender ação X1 (LONG THE SPREAD)
+    """
+    
+    ativos_open = pd.DataFrame()
+    
+    for i in tickers:
+      df2 = yf.download(i, start=data_inicial, end=data_final)['Open']
+      df2.rename(i, inplace=True)
+      ativos_open = pd.concat([ativos_open,df2],axis=1)
+      ativos_open.index.name='Date'
+    ativos_open
+    
+        
+    #Parametros PARA O BACKTEST
+    
+    CAIXA = 200000 #ABSOLUTO
+    TAXA = 0.0001
+    PCT_ORDEM1 = 0.10
+    PCT_ORDEM2 = 0.10
+    BANDA_SUPERIOR = 1.0
+    BANDA_INFERIOR = -1.0
+    
+    
+    
+    #Gerar o sinal de long short
+    
+    vbt_sinal_short = (z_score > BANDA_SUPERIOR).rename('sinal_short')
+    vbt_sinal_long  = (z_score < BANDA_INFERIOR).rename('sinal_long')
+    
+    pd.Series.vbt.signals.clean(
+     vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep'))
+    
+    #Garantir mesmo tamanho para os vetores de sinal
+    vbt_sinal_short, vbt_sinal_long = pd.Series.vbt.signals.clean(
+      vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep')
+    )
+    
+    
+    tickers_coluna = pd.Index([ativoA, ativoB], name='tickers')
+    vbt_ordem = pd.DataFrame(index=ativos.index, columns=tickers_coluna)
+    vbt_ordem[ativoA] = np.nan
+    vbt_ordem[ativoB] = np.nan
+    vbt_ordem.loc[vbt_sinal_short, ativoA] = -PCT_ORDEM1
+    vbt_ordem.loc[vbt_sinal_long, ativoB] = PCT_ORDEM1
+    vbt_ordem.loc[vbt_sinal_short, ativoA] = PCT_ORDEM2
+    vbt_ordem.loc[vbt_sinal_long, ativoB] = -PCT_ORDEM2
+    
+    
+    vbt_ordem = vbt_ordem.vbt.fshift(1)
+    
+    #eu criei duas constantes para gerar o gráfico do desvio padrão anterior, precisa tirar para dar certo o calculo!!!
+    ativos = ativos.drop(['cte','cte2'], axis=1)
+    
+    def portfolio_pairs_trading():
+    
+        return vbt.Portfolio.from_orders(
+            ativos,
+            size=vbt_ordem,
+            price=ativos_open,
+            size_type='targetpercent',
+            val_price=ativos.vbt.fshift(1),
+            init_cash=CAIXA,
+            fees=TAXA,
+            cash_sharing=True,
+            group_by=True,
+            call_seq='auto',
+            freq='d'
+        )
+    
+    vbt_pf = portfolio_pairs_trading()
+    
+    st.write(vbt_pf.orders.records_readable)
+    st.write(vbt_pf.stats())
+    
+    #grafico de dados acumulativo
+    vbt_pf.plot().show();
+    
+    #plot_underwater
+    vbt_pf.plot_underwater().show();
+    
+    #gráficos de drawdowns
+    vbt_pf.drawdowns.plot(top_n=15).show();
+    
+                
+            
+        
+        
+
+
 def main():
     url = 'https://images.jota.info/wp-content/uploads/2021/12/usa-g893b7a7d8-1920-1024x739.jpg'
     st.sidebar.image(url, width=(200))
     st.sidebar.title('APP - Mercado Financeiro')
     st.sidebar.markdown('---')
-    lista_menu = ['Home', 'Panorama do Mercado', 'Rentabilidade Mensais', 'Fundamentos']
+    lista_menu = ['Home', 'Panorama do Mercado', 'Rentabilidade Mensais', 'Fundamentos', 'Long&Short']
     escolha = st.sidebar.radio('Escolha a opção', lista_menu)
     
     if escolha == 'Home':
@@ -299,5 +545,8 @@ def main():
         mapa_mensal()
     if escolha == 'Fundamentos':
         Fundamentos()
+    if escolha == 'Long&Short':
+        longshort()
+        
     
 main()
