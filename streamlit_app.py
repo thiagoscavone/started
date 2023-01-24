@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import fundamentus as fd
 
-#import statsmodels
+import statsmodels
 import numpy as np
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import coint, adfuller
