@@ -450,92 +450,94 @@ def longshort():
             
             z-score < threshold = comprar ação X2 e vender ação X1 (LONG THE SPREAD)
             """
-            
-            ativos_open = pd.DataFrame()
-            
-            for i in tickers:
-              df2 = yf.download(i, start=data_inicial, end=data_final)['Open']
-              df2.rename(i, inplace=True)
-              ativos_open = pd.concat([ativos_open,df2],axis=1)
-              ativos_open.index.name='Date'
-            ativos_open
-            
+            st.markdown('---')
+            seguir_calculo2 = st.checkbox('Prosseguir com os cáculos:')
+            if seguir_calculo2:
+                ativos_open = pd.DataFrame()
                 
-            #Parametros PARA O BACKTEST
-            
-            CAIXA = 200000 #ABSOLUTO
-            TAXA = 0.0001
-            PCT_ORDEM1 = 0.10
-            PCT_ORDEM2 = 0.10
-            BANDA_SUPERIOR = 1.0
-            BANDA_INFERIOR = -1.0
-            
-            
-            
-            #Gerar o sinal de long short
-            
-            ########fig_1, ax_1 = plt.subplots(figsize=(10,6))
-            ######## testar a formula acima para fazer print do grafico
-            ########
-            
-            vbt_sinal_short = (z_score > BANDA_SUPERIOR).rename('sinal_short')
-            vbt_sinal_long  = (z_score < BANDA_INFERIOR).rename('sinal_long')
-            
-            pd.Series.vbt.signals.clean(
-             vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep'))
-            
-            #Garantir mesmo tamanho para os vetores de sinal
-            vbt_sinal_short, vbt_sinal_long = pd.Series.vbt.signals.clean(
-              vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep')
-            )
-            
-            
-            tickers_coluna = pd.Index([ativoA, ativoB], name='tickers')
-            vbt_ordem = pd.DataFrame(index=ativos.index, columns=tickers_coluna)
-            vbt_ordem[ativoA] = np.nan
-            vbt_ordem[ativoB] = np.nan
-            vbt_ordem.loc[vbt_sinal_short, ativoA] = -PCT_ORDEM1
-            vbt_ordem.loc[vbt_sinal_long, ativoB] = PCT_ORDEM1
-            vbt_ordem.loc[vbt_sinal_short, ativoA] = PCT_ORDEM2
-            vbt_ordem.loc[vbt_sinal_long, ativoB] = -PCT_ORDEM2
-            
-            
-            vbt_ordem = vbt_ordem.vbt.fshift(1)
-            
-            #eu criei duas constantes para gerar o gráfico do desvio padrão anterior, precisa tirar para dar certo o calculo!!!
-            ativos = ativos.drop(['cte','cte2'], axis=1)
-            
-            def portfolio_pairs_trading():
-            
-                return vbt.Portfolio.from_orders(
-                    ativos,
-                    size=vbt_ordem,
-                    price=ativos_open,
-                    size_type='targetpercent',
-                    val_price=ativos.vbt.fshift(1),
-                    init_cash=CAIXA,
-                    fees=TAXA,
-                    cash_sharing=True,
-                    group_by=True,
-                    call_seq='auto',
-                    freq='d'
-                )
-            
-            vbt_pf = portfolio_pairs_trading()
-            
-            st.write(vbt_pf.orders.records_readable)
-            st.write(vbt_pf.stats())
-            
-            #grafico de dados acumulativo
-            vbt_pf.plot().show();
-            
-            #plot_underwater
-            vbt_pf.plot_underwater().show();
-            
-            #gráficos de drawdowns
-            vbt_pf.drawdowns.plot(top_n=15).show();
-            
+                for i in tickers:
+                  df2 = yf.download(i, start=data_inicial, end=data_final)['Open']
+                  df2.rename(i, inplace=True)
+                  ativos_open = pd.concat([ativos_open,df2],axis=1)
+                  ativos_open.index.name='Date'
+                ativos_open
+                
                     
+                #Parametros PARA O BACKTEST
+                
+                CAIXA = 200000 #ABSOLUTO
+                TAXA = 0.0001
+                PCT_ORDEM1 = 0.10
+                PCT_ORDEM2 = 0.10
+                BANDA_SUPERIOR = 1.0
+                BANDA_INFERIOR = -1.0
+                
+                
+                
+                #Gerar o sinal de long short
+                
+                ########fig_1, ax_1 = plt.subplots(figsize=(10,6))
+                ######## testar a formula acima para fazer print do grafico
+                ########
+                
+                vbt_sinal_short = (z_score > BANDA_SUPERIOR).rename('sinal_short')
+                vbt_sinal_long  = (z_score < BANDA_INFERIOR).rename('sinal_long')
+                
+                pd.Series.vbt.signals.clean(
+                 vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep'))
+                
+                #Garantir mesmo tamanho para os vetores de sinal
+                vbt_sinal_short, vbt_sinal_long = pd.Series.vbt.signals.clean(
+                  vbt_sinal_short, vbt_sinal_long, entry_first=False, broadcast_kwargs=dict(columns_from='keep')
+                )
+                
+                
+                tickers_coluna = pd.Index([ativoA, ativoB], name='tickers')
+                vbt_ordem = pd.DataFrame(index=ativos.index, columns=tickers_coluna)
+                vbt_ordem[ativoA] = np.nan
+                vbt_ordem[ativoB] = np.nan
+                vbt_ordem.loc[vbt_sinal_short, ativoA] = -PCT_ORDEM1
+                vbt_ordem.loc[vbt_sinal_long, ativoB] = PCT_ORDEM1
+                vbt_ordem.loc[vbt_sinal_short, ativoA] = PCT_ORDEM2
+                vbt_ordem.loc[vbt_sinal_long, ativoB] = -PCT_ORDEM2
+                
+                
+                vbt_ordem = vbt_ordem.vbt.fshift(1)
+                
+                #eu criei duas constantes para gerar o gráfico do desvio padrão anterior, precisa tirar para dar certo o calculo!!!
+                ativos = ativos.drop(['cte','cte2'], axis=1)
+                
+                def portfolio_pairs_trading():
+                
+                    return vbt.Portfolio.from_orders(
+                        ativos,
+                        size=vbt_ordem,
+                        price=ativos_open,
+                        size_type='targetpercent',
+                        val_price=ativos.vbt.fshift(1),
+                        init_cash=CAIXA,
+                        fees=TAXA,
+                        cash_sharing=True,
+                        group_by=True,
+                        call_seq='auto',
+                        freq='d'
+                    )
+                
+                vbt_pf = portfolio_pairs_trading()
+                
+                st.write(vbt_pf.orders.records_readable)
+                st.write(vbt_pf.stats())
+                
+                #grafico de dados acumulativo
+                vbt_pf.plot().show();
+                
+                #plot_underwater
+                vbt_pf.plot_underwater().show();
+                
+                #gráficos de drawdowns
+                vbt_pf.drawdowns.plot(top_n=15).show();
+                
+                        
                 
             
             
