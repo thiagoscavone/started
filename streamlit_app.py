@@ -4,7 +4,7 @@ abrir o anaconda navigator,
 abrir terminal no machine learning,
 cd - entrar na pasta onde esta o arquivo
 chamar o streamlit com o arquivo.
-#(MachineLearning) cd c:/users/tf/google drive/codigos py/app
+#(MachineLearning) cd c:/users/tf/google drive/Codigos/app
 
 #(MachineLearning) streamlit run ./streamlit_app.py
 
@@ -29,6 +29,9 @@ from plotly.subplots import make_subplots
 from datetime import date, timedelta
 import datetime
 
+import warnings
+import riskfolio as rp
+warnings.filterwarnings('ignore')
 
 
 def home():
@@ -660,6 +663,14 @@ def otimiza():
         #Calcula o retorno e pega a covariancia
         cov_out = retorno_carteira_out.cov()
         st.write(cov_out)
+        
+        ax = rp.plot_dendrogram(returns=retorno_carteira,
+                      codependence='pearson',
+                      linkage='single',
+                      k=None,
+                      max_k=10,
+                      leaf_order=True,
+                      ax=None)
 
         
 
