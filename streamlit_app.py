@@ -29,8 +29,6 @@ from plotly.subplots import make_subplots
 from datetime import date, timedelta
 import datetime
 
-
-
 def home():
     st.markdown('---')
     col1, col2, col3 = st.columns([0.3,1,0.3])
@@ -451,7 +449,7 @@ def longshort():
             z-score < threshold = comprar ação X2 e vender ação X1 (LONG THE SPREAD)
             """
             st.markdown('---')
-            seguir_calculo2 = st.checkbox('Prosseguir com os cáculos:')
+            seguir_calculo2 = st.button('Prosseguir com os cáculos:')
             if seguir_calculo2:
                 ativos_open = pd.DataFrame()
                 
@@ -538,9 +536,136 @@ def longshort():
                 vbt_pf.drawdowns.plot(top_n=15).show();
                 
                         
-                
-            
-            
+  
+
+
+def otimiza():
+    st.markdown('---')
+    st.title('Realize a otimização de sua carteira')
+    st.markdown('---')
+    
+    #Usa o cache para adiacionar os papeis na memoria e por na lista
+    @st.cache(allow_output_mutation=True)
+    def get_data():
+        return []  
+    
+    #escolha efetiva do papel.
+    st.markdown('---')
+    st.subheader('Selecione os papeis')
+    lista_tickers = fd.list_papel_all()
+    ativo_selecionado = st.selectbox('Selecione o Ativo', lista_tickers)
+    st.markdown('---')
+    #Definir a quantidade de 0 até 100%
+    qtde = st.slider("Peso%", 0, 100)
+    
+    #Se errou - ter como apagar
+    if st.button("Apagar"):
+        get_data().clear()
+    #Adição efetiva do papel e % no dataframe        
+    if st.button("Adicionar"):
+        get_data().append({"Ativo": ativo_selecionado, "Peso%": qtde})
+    #mostra de resultado, avisa se passou de 100%
+    if get_data() !=[]:
+        st.write(pd.DataFrame(get_data()))
+        ativos_df = pd.DataFrame(get_data())    
+        st.write('A soma total está em ', ativos_df["Peso%"].sum(), '%') 
+        if ativos_df["Peso%"].sum()>100:
+            st.warning('Passou de 100%')           
+        
+        #adaptação do codigo para array de pesos
+        peso_in = np.array(ativos_df["Peso%"])
+         
+        #Definir a data inicial para puxar os dados
+        st.markdown('---')   
+        
+        '''escolha das datas iniciais e final'''
+        
+        data_inicial = st.date_input(
+        "Qual a data inicial?",
+        datetime.date(2015, 7, 6))
+        st.write('A data escolhida é:', data_inicial)
+        
+        data_sugerida = data_inicial +  timedelta(days = 730)
+        data_final = st.date_input(
+            "Qual a data final?",
+            (data_sugerida))
+        st.write('A data escolhida é:', data_final)
+           
+           #tratando as datas para o yf poder ler
+        format(data_inicial, "%Y-%m-%d")
+        format(data_final, "%Y-%m-%d")
+  
+        #Acrescentando o .SA necessário para a leitura do yf
+        tickers = [i + '.SA' for i in ativos_df['Ativo']]
+        #criando o dataframe onde será armazenado
+        ativos_carteira = pd.DataFrame()
+        for i in tickers:
+         
+           df = yf.download(i, start=data_inicial, end=data_final)['Adj Close']
+           df.rename(i, inplace=True)
+           ativos_carteira = pd.concat([ativos_carteira,df], axis=1)
+           ativos_carteira.index.name='Date'
+        #checando o dataframe
+        st.dataframe(ativos_carteira)
+        
+        #calculando os retornos     #Excluindo os NAN 
+        retorno_carteira = ativos_carteira.pct_change().dropna()
+        #Calcula o retorno e pega a covariancia
+        cov_in = retorno_carteira.cov()
+        #montando a matriz de pesos e ativos
+        pesos_in = pd.DataFrame(data={'pesos_in':peso_in}, index=tickers)
+        st.write(pesos_in)
+        
+        #"""Proxima etapa - carteira de comparação, a out"""
+        
+        #'''escolha das datas iniciais e final'''
+        
+        data_inicial2 =  st.date_input(
+            "Qual a segunda data inicial?",
+            (data_final))
+        st.write('A data escolhida é:', data_final)               
+        
+        
+        today = date.today()
+           #data_final=today
+        data_final2 = st.date_input(
+            "Qual a data final?",
+            (today))
+        st.write('A data escolhida é:', data_final2)
+           
+           #tratando as datas para o yf poder ler
+        format(data_inicial2, "%Y-%m-%d")
+        format(data_final2, "%Y-%m-%d")
+        
+        # fim das datas da segunda carteira
+        
+        #inicio para o download da segunda etapa
+        #Acrescentando o .SA necessário para a leitura do yf
+       # tickers = [i + '.SA' for i in ativos_df['Ativo']]
+        #criando o dataframe onde será armazenado
+        ativos_carteira_out = pd.DataFrame()
+        for i in tickers:
+         
+           df = yf.download(i, start=data_inicial2, end=data_final2)['Adj Close']
+           df.rename(i, inplace=True)
+           ativos_carteira_out = pd.concat([ativos_carteira_out,df], axis=1)
+           ativos_carteira_out.index.name='Date'
+        #checando o dataframe
+        st.dataframe(ativos_carteira_out)
+        
+        #calculando os retornos     #Excluindo os NAN 
+        retorno_carteira_out = ativos_carteira_out.pct_change().dropna()
+        #Calcula o retorno e pega a covariancia
+        cov_out = retorno_carteira_out.cov()
+        st.write(cov_out)
+        
+    
+
+
+
+
+
+
 
 
 def main():
@@ -548,7 +673,7 @@ def main():
     st.sidebar.image(url, width=(200))
     st.sidebar.title('APP - Mercado Financeiro')
     st.sidebar.markdown('---')
-    lista_menu = ['Home', 'Panorama do Mercado', 'Rentabilidade Mensais', 'Fundamentos', 'Long&Short']
+    lista_menu = ['Home', 'Panorama do Mercado', 'Rentabilidade Mensais', 'Fundamentos', 'Long&Short', 'Otimizador de Carteira']
     escolha = st.sidebar.radio('Escolha a opção', lista_menu)
     
     if escolha == 'Home':
@@ -561,6 +686,8 @@ def main():
         Fundamentos()
     if escolha == 'Long&Short':
         longshort()
+    if escolha == 'Otimizador de Carteira':
+        otimiza()
         
     
 main()
