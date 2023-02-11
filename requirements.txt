@@ -13,7 +13,7 @@ cvxpy>=1.1.7
 scikit-learn>=1.0.0
 wget>=2.0.0
 tensorflow>=2.11.0
-pytest-shutil>=3.4.0
+pytest-shutil>=1.1.0
 os-sys==2.1.4
 statsmodels>=0.10.1
 arch>=4.15
