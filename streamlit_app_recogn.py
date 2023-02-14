@@ -896,7 +896,8 @@ def otimiza():
             pdf.image('pf_returns_in.png', w=150, h=70)
             pdf.ln(20)
              
-            pdf.cell(12, 7, "Histograma de retornos, na carteira sugerida, de {} ate {}".format(data_final,data_final2))
+            pdf.cell(12, 7, "Histograma de retornos, na carteira sugerida,")
+            pdf.cell(12, 7, "de {} ate {}".format(data_final,data_final2))
             pdf.ln(8)
             pdf.image('pf_returns_out.png', w=150, h=70)
             pdf.ln(20)
