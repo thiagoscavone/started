@@ -975,7 +975,7 @@ def recogn():
                 image_shape = image_size + (image_color_channel,)
                 
                 batch_size = 32
-                epochs = 3 #20
+                epochs = 2 #20
                 learning_rate = 0.001 #0.0001
                 
                 
