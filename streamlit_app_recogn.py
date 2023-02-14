@@ -967,8 +967,8 @@ def recogn():
                 st.write('Validation Cats: %s' % dataset_validation_cats_len)
                 st.write('Validation Dogs: %s' % dataset_validation_dogs_len)
                     
-                image_width = 160
-                image_height = 160
+                image_width = 100 #160
+                image_height = 100 #160
                 image_color_channel = 3
                 image_color_channel_size = 255
                 image_size = (image_width, image_height)
@@ -1043,7 +1043,7 @@ def recogn():
                 def plot_dataset_data_augmentation(dataset):
                 
                     plt.gcf().clear()
-                    plt.figure(figsize = (15, 15))
+                    plt.figure(figsize = (10, 10)) #15,15 original
                 
                     for features, _ in dataset.take(1):
                 
@@ -1141,7 +1141,7 @@ def recogn():
                     st.write('Predictions: %s' % predictions.numpy())
                 
                     plt.gcf().clear()
-                    plt.figure(figsize = (15, 15))
+                    plt.figure(figsize = (10, 10)) #15,15 original
                 
                    # for i in range(9):
                # 
@@ -1156,7 +1156,7 @@ def recogn():
                 model.save('model')
                 model = tf.keras.models.load_model('model')
                 
-                @st.cache(ttl=1*1*60) # não tinha mas dava pau
+                #@st.cache(ttl=1*1*60) # não tinha mas dava pau
                 def predict(image_file):
                 
                     image = tf.keras.preprocessing.image.load_img(image_file, target_size = image_size)
