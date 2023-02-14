@@ -945,7 +945,7 @@ def recogn():
         with st.spinner('Atualizando - leva cerca de 10 min...'):
             with st.expander('Ao selecionar, vai rodar e demora um pouco. Então aguarde.', expanded=True):
                 #ACRESCENTANDO O '.SA' PARA YF ENTENDER OS ATIVOS
-    
+                
                 url= 'https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip'
                 filename = wget.download(url)
                 shutil.unpack_archive(filename)
@@ -1011,7 +1011,7 @@ def recogn():
                 dataset_test = dataset_validation.prefetch(buffer_size = autotune)
                     
             
-            
+              
                 def plot_dataset(dataset):
                 
                     plt.gcf().clear()
@@ -1039,7 +1039,7 @@ def recogn():
                     tf.keras.layers.experimental.preprocessing.RandomZoom(0.2)
                 ])
             
-            
+                
                 def plot_dataset_data_augmentation(dataset):
                 
                     plt.gcf().clear()
@@ -1085,7 +1085,7 @@ def recogn():
                 )
                 
                 model.summary()
-            
+                #aqui é um ponto de trava..... como melhorar aqui? jogar no cache-como?
                 history = model.fit(
                     dataset_train,
                     validation_data = dataset_validation,
@@ -1095,7 +1095,7 @@ def recogn():
                     ]
                 )
                
-            
+                
                 def plot_model():
             
                     accuracy = history.history['accuracy']
@@ -1129,7 +1129,7 @@ def recogn():
                 st.write('Dataset Test Loss:     %s' % dataset_test_loss)
                 st.write('Dataset Test Accuracy: %s' % dataset_test_accuracy)
                 
-                
+               
                 def plot_dataset_predictions(dataset):
             
                     features, labels = dataset_test.as_numpy_iterator().next()
@@ -1156,6 +1156,7 @@ def recogn():
                 model.save('model')
                 model = tf.keras.models.load_model('model')
                 
+                @st.cache(ttl=1*5*60)
                 def predict(image_file):
                 
                     image = tf.keras.preprocessing.image.load_img(image_file, target_size = image_size)
@@ -1166,7 +1167,7 @@ def recogn():
                 
                     st.write('Prediction: {0} | {1}'.format(prediction, ('cat' if prediction < 0.5 else 'dog')))
                 
-                
+                @st.cache(ttl=1*5*60)
                 def predict_url(image_fname, image_origin):
                 
                     image_file = tf.keras.utils.get_file(image_fname, origin = image_origin)
