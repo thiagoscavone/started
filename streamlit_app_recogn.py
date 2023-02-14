@@ -39,6 +39,7 @@ import wget
 import shutil
 
 
+
 warnings.filterwarnings('ignore')
 
 
@@ -580,6 +581,8 @@ def otimiza():
         with st.spinner('Atualizando ativos...'):
             get_data().append({"Ativo": ativo_selecionado, "Peso%": qtde})
     #mostra de resultado, avisa se passou de 100%
+    
+    
     if get_data() !=[]:
         st.write(pd.DataFrame(get_data()))
         ativos_df = pd.DataFrame(get_data())    
@@ -917,24 +920,31 @@ def otimiza():
                         mime='application/octet-stream')
 
 
+
+
+
 def recogn():
     st.markdown('---')
     st.title('Realize aqui o reconhecimento entre cães e gatos')
     st.markdown('---')
     with st.expander('Tire uma foto (n funciona em celular ainda) - demora um pouco', expanded=True):
         img_file_buffer = st.camera_input("Tire uma foto")
+    if img_file_buffer == None:
+        st.write('Você não tirou uma foto, então faça upload de uma imagem.')
         
     st.subheader("Escolha uma imagem no formato de jpg ou png para testar")
     arquivo = st.file_uploader('Faça o upload do arquivo', type=['jpg','png'])
 
+    #poder regular aqtd de epocas q ele vai treinar
+    #epochs = st.number_input('Insira a quantidade de epochs 1 a 5', int() , step=1)
+    #st.write('The current number is ', epochs)
     st.markdown('---')
     seguir_calculo = st.checkbox('Protótipo, inicie os cáculos:')
-    if seguir_calculo:
+    if seguir_calculo and (arquivo!=None or img_file_buffer!=None):
+        st.write('você precisas selecionar uma imagem')
         with st.spinner('Atualizando - leva cerca de 10 min...'):
             with st.expander('Ao selecionar, vai rodar e demora um pouco. Então aguarde.', expanded=True):
                 #ACRESCENTANDO O '.SA' PARA YF ENTENDER OS ATIVOS
-        
-    
     
                 url= 'https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip'
                 filename = wget.download(url)
@@ -965,8 +975,8 @@ def recogn():
                 image_shape = image_size + (image_color_channel,)
                 
                 batch_size = 32
-                epochs = 9 #20
-                learning_rate = 0.00001 #0.0001
+                epochs = 3 #20
+                learning_rate = 0.001 #0.0001
                 
                 
                 class_names = ['cat', 'dog']
@@ -1084,7 +1094,7 @@ def recogn():
                         early_stopping
                     ]
                 )
-            
+               
             
                 def plot_model():
             
@@ -1097,9 +1107,10 @@ def recogn():
                     epochs_range = range(epochs)
                 
                     plt.gcf().clear()
+                    fig, ax = plt.subplot(1, 2, 1)
                     plt.figure(figsize = (15, 8))
                 
-                    plt.subplot(1, 2, 1)
+                   # plt.subplot(1, 2, 1)
                     plt.title('Training and Validation Accuracy')
                     plt.plot(epochs_range, accuracy, label = 'Training Accuracy')
                     plt.plot(epochs_range, val_accuracy, label = 'Validation Accuracy')
@@ -1110,8 +1121,8 @@ def recogn():
                     plt.plot(epochs_range, loss, label = 'Training Loss')
                     plt.plot(epochs_range, val_loss, label = 'Validation Loss')
                     plt.legend(loc = 'lower right')
-                
-                    plt.show()
+                    st.plotly_chart(fig)  
+                    #plt.show()
                 
                 dataset_test_loss, dataset_test_accuracy = model.evaluate(dataset_test)
                 
