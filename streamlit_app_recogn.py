@@ -976,7 +976,7 @@ def recogn():
                 
                 batch_size = 25 #32
                 epochs = 2 #20
-                learning_rate = 0.001 #0.0001
+                learning_rate = 0.01 #0.0001
                 
                 
                 class_names = ['cat', 'dog']
@@ -1156,7 +1156,7 @@ def recogn():
                 model.save('model')
                 model = tf.keras.models.load_model('model')
                 
-                @st.cache(ttl=1*5*60)
+                @st.cache(ttl=1*1*60) # não tinha mas dava pau
                 def predict(image_file):
                 
                     image = tf.keras.preprocessing.image.load_img(image_file, target_size = image_size)
@@ -1167,7 +1167,7 @@ def recogn():
                 
                     st.write('Prediction: {0} | {1}'.format(prediction, ('cat' if prediction < 0.5 else 'dog')))
                 
-                @st.cache(ttl=1*5*60)
+                #@st.cache(ttl=1*2*60)
                 def predict_url(image_fname, image_origin):
                 
                     image_file = tf.keras.utils.get_file(image_fname, origin = image_origin)
