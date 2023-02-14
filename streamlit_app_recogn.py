@@ -887,7 +887,7 @@ def otimiza():
             pdf.cell(12,7, " por ativo de {} ate {}".format(data_final,data_final2))
             pdf.ln(8)
             pdf.image('risk_cont_ativo_otimizado.png', w=150, h=70)
-            pdf.ln(30)
+            pdf.ln(20)
             
             #8 Histograma de retornos
             
@@ -899,7 +899,7 @@ def otimiza():
             pdf.cell(12, 7, "Histograma de retornos, na carteira sugerida, de {} ate {}".format(data_final,data_final2))
             pdf.ln(8)
             pdf.image('pf_returns_out.png', w=150, h=70)
-            pdf.ln(30)
+            pdf.ln(20)
             
             
             # 9. Disclaimer
