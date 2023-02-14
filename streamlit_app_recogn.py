@@ -856,7 +856,7 @@ def otimiza():
             pdf.cell(5, 7,'Como sua carteira performou de {} até {}'.format(data_final, data_final2))
             pdf.ln(8)
             pdf.image('table_out.png', w=100, h=150)
-            pdf.ln(10)
+            pdf.ln(20)
             
             #5 Retorno Acumuiado Carteira
             pdf.cell(5, 7, 'Retorno Acumulado da Carteira de {} até {}'.format(data_final,data_final2))
