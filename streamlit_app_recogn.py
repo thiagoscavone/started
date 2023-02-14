@@ -48,7 +48,7 @@ def home():
     col1, col2, col3 = st.columns([0.3,1,0.3])
     with col2:
         st.title('Visão de Mercado')
-        url = 'https://images.jota.info/wp-content/uploads/2021/12/usa-g893b7a7d8-1920-1024x739.jpg'
+        url = 'download (1).jpg'
         st.image(url)
     st.markdown('---')
         
@@ -808,7 +808,7 @@ def otimiza():
             
             def header(self):
                 # definindo logo
-                self.image('https://images.jota.info/wp-content/uploads/2021/12/usa-g893b7a7d8-1920-1024x739.jpg', 10, 8, 33)
+                self.image('download (1).jpg', 10, 8, 33)
                 self.set_font('Arial', 'B', 10)
                 
                 # Add texto resumo simples
@@ -1201,7 +1201,7 @@ def recogn():
    
 
 def main():
-    url = 'https://images.jota.info/wp-content/uploads/2021/12/usa-g893b7a7d8-1920-1024x739.jpg'
+    url = 'download (1).jpg'
     st.sidebar.image(url, width=(200))
     st.sidebar.title('APP - Mercado Financeiro')
     st.sidebar.markdown('---')
