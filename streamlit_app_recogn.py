@@ -571,7 +571,7 @@ def otimiza():
     st.markdown('---')
     #Definir a quantidade de 0 até 100%
     qtde = st.slider("Peso%", 0, 100)
-    
+    qtde = float(qtde)/100
     #Se errou - ter como apagar
     if st.button("Apagar"):
         with st.spinner('Apagando a lista de ativos...'):
@@ -587,7 +587,7 @@ def otimiza():
         st.write(pd.DataFrame(get_data()))
         ativos_df = pd.DataFrame(get_data())    
         st.write('A soma total está em ', ativos_df["Peso%"].sum(), '%') 
-        if ativos_df["Peso%"].sum()>100:
+        if ativos_df["Peso%"].sum()>1:
             st.warning('Passou de 100%')           
         
         #adaptação do codigo para array de pesos
