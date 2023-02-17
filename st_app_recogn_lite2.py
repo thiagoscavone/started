@@ -473,7 +473,7 @@ def longshort():
                 ativos_open = pd.DataFrame()
                 
                 for i in tickers:
-                  df2 = yf.download(i, start=data_inicial, end=data_final)['Open']
+                  df2 = yf.download(i, start=data_inicial_ls, end=data_final_ls)['Open']
                   df2.rename(i, inplace=True)
                   ativos_open = pd.concat([ativos_open,df2],axis=1)
                   ativos_open.index.name='Date'
@@ -577,6 +577,8 @@ def otimiza():
     #Definir a quantidade de 0 até 100%
     qtde = st.slider("Peso%", 0.0, 100.0, 10.0, step=1.00)
     qtde = float(qtde)/100
+    #definindo o dataframe
+    
     #Se errou - ter como apagar
     if st.button("Apagar a lista de ativos"):
         with st.spinner('Apagando a lista de ativos...'):
@@ -591,12 +593,15 @@ def otimiza():
         with st.spinner('Atualizando ativos...'):
             get_data().append({"Ativo": ativo_selecionado, "Peso%": qtde})
     #mostra de resultado, avisa se passou de 100%
+    
     if get_data() !=[]:
         st.write(pd.DataFrame(get_data()))
         ativos_df = pd.DataFrame(get_data())    
         st.write('A soma total está em ', (100*ativos_df["Peso%"].sum()), '%') 
        
-    if  get_data() !=[]:
+    if  get_data == []:
+         st.warning('Selecione os ativos somando até 100%') 
+    else:
         if (ativos_df["Peso%"].sum()*100)>100:
             st.warning('Passou de 100%') 
             
@@ -641,17 +646,6 @@ def otimiza():
     format(data_final2, "%Y-%m-%d")
     
     # fim das datas da segunda carteira        
-
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             
     
     if st.button("Rodar"):
