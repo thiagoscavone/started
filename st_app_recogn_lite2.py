@@ -330,21 +330,21 @@ def longshort():
     st.markdown('---')   
     
     '''escolha das datas iniciais e final'''
-    data_inicial = st.date_input(
-     "Qual a data inicial?",
+    data_inicial_ls = st.date_input(
+     "Qual a data inicial do Long&Short?",
     datetime.date(2019, 7, 6))
-    st.write('A data escolhida é:', data_inicial)
+    st.write('A data escolhida é:', data_inicial_ls)
     
     today = date.today()
     #data_final=today
-    data_final = st.date_input(
-     "Qual a data final?",
+    data_final_ls = st.date_input(
+     "Qual a data final do Long&Short?",
     (today))
-    st.write('A data escolhida é:', data_final)
+    st.write('A data escolhida é:', data_final_ls)
     
     #tratando as datas para o yf poder ler
-    format(data_inicial, "%Y-%m-%d")
-    format(data_final, "%Y-%m-%d")
+    format(data_inicial_ls, "%Y-%m-%d")
+    format(data_final_ls, "%Y-%m-%d")
     
     #VERFICANDO O FORMATO DA DATA
     #st.write('A data escolhida é:', data_inicial)
@@ -362,7 +362,7 @@ def longshort():
              
             for i in tickers:
              
-               df = yf.download(i, start=data_inicial, end=data_final)['Adj Close']
+               df = yf.download(i, start=data_inicial_ls, end=data_final_ls)['Adj Close']
                df.rename(i, inplace=True)
                ativos = pd.concat([ativos,df], axis=1)
                ativos.index.name='Date'
@@ -594,350 +594,374 @@ def otimiza():
     if get_data() !=[]:
         st.write(pd.DataFrame(get_data()))
         ativos_df = pd.DataFrame(get_data())    
-        st.write('A soma total está em ', ativos_df["Peso%"].sum(), '%') 
-    if ativos_df["Peso%"].sum()>1:
-        st.warning('Passou de 100%') 
+        st.write('A soma total está em ', (100*ativos_df["Peso%"].sum()), '%') 
+       
+    if  get_data() !=[]:
+        if (ativos_df["Peso%"].sum()*100)>100:
+            st.warning('Passou de 100%') 
+            
+            
+            
+    '''Escolha das datas de cada período.
+    Primeiramente defina a data inicial e final
+    do primeiro período. '''
+    
+    data_inicial_carteira = st.date_input(
+    "Qual a data inicial para a análise da carteira?",
+    datetime.date(2015, 7, 6))
+    st.write('A data escolhida é:', data_inicial_carteira)
+    
+    data_sugerida = data_inicial_carteira +  timedelta(days = 730)
+    data_final_carteira = st.date_input(
+        "Qual a data final para a análise da carteira?",
+        (data_sugerida))
+    st.write('A data escolhida é:', data_final_carteira)
+       
+       #tratando as datas para o yf poder ler
+    format(data_inicial_carteira, "%Y-%m-%d")
+    format(data_final_carteira, "%Y-%m-%d")
+                
+
+#'''escolha das datas iniciais e fina da segunda etapa'''
+    
+    data_inicial2 =  st.date_input(
+        "Qual a nova data inicial para aplicar a otimização da carteira?",
+        (data_final_carteira))
+    st.write('A data escolhida é:', data_final_carteira)               
+
+    today = date.today()
+       #data_final=today
+    data_final2 = st.date_input(
+        "Qual a data final para aplicação da otimização?",
+        (today))
+    st.write('A data escolhida é:', data_final2)
+       
+       #tratando as datas para o yf poder ler
+    format(data_inicial2, "%Y-%m-%d")
+    format(data_final2, "%Y-%m-%d")
+    
+    # fim das datas da segunda carteira        
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
     
     if st.button("Rodar"):
-           
-            #adaptação do codigo para array de pesos
-            peso_in = np.array(ativos_df["Peso%"])
-             
-            #Definir a data inicial para puxar os dados
-            st.markdown('---')   
-            
-            '''Escolha das datas de cada período.
-            Primeiramente defina a data inicial e final
-            do primeiro período. '''
-            
-            data_inicial = st.date_input(
-            "Qual a data inicial?",
-            datetime.date(2015, 7, 6))
-            st.write('A data escolhida é:', data_inicial)
-            
-            data_sugerida = data_inicial +  timedelta(days = 730)
-            data_final = st.date_input(
-                "Qual a data final?",
-                (data_sugerida))
-            st.write('A data escolhida é:', data_final)
-               
-               #tratando as datas para o yf poder ler
-            format(data_inicial, "%Y-%m-%d")
-            format(data_final, "%Y-%m-%d")
-      
-            #Acrescentando o .SA necessário para a leitura do yf
-            tickers = [i + '.SA' for i in ativos_df['Ativo']]
-            #criando o dataframe onde será armazenado
-            ativos_carteira = pd.DataFrame()
-            for i in tickers:
          
-               df = yf.download(i, start=data_inicial, end=data_final)['Adj Close']
-               df.rename(i, inplace=True)
-               ativos_carteira = pd.concat([ativos_carteira,df], axis=1)
-               ativos_carteira.index.name='Date'
-            #checando o dataframe
-            st.dataframe(ativos_carteira)
-            
-            #calculando os retornos     #Excluindo os NAN 
-            retorno_carteira = ativos_carteira.pct_change().dropna()
-            #Calcula o retorno e pega a covariancia
-            cov_in = retorno_carteira.cov()
-            #montando a matriz de pesos e ativos
-            pesos_in = pd.DataFrame(data={'pesos_in':peso_in}, index=tickers)
-           
-            
-            #"""Proxima etapa - carteira de comparação, a out"""
-            
-            #'''escolha das datas iniciais e final'''
-            
-            data_inicial2 =  st.date_input(
-                "Qual a segunda data inicial?",
-                (data_final))
-            st.write('A data escolhida é:', data_final)               
-            
-            
-            today = date.today()
-               #data_final=today
-            data_final2 = st.date_input(
-                "Qual a data final?",
-                (today))
-            st.write('A data escolhida é:', data_final2)
-               
-               #tratando as datas para o yf poder ler
-            format(data_inicial2, "%Y-%m-%d")
-            format(data_final2, "%Y-%m-%d")
-            
-            # fim das datas da segunda carteira
-            
-            #inicio para o download da segunda etapa
-            #Acrescentando o .SA necessário para a leitura do yf
-           # tickers = [i + '.SA' for i in ativos_df['Ativo']]
-            #criando o dataframe onde será armazenado
-            ativos_carteira_out = pd.DataFrame()
-            for i in tickers:
-             
-               df = yf.download(i, start=data_inicial2, end=data_final2)['Adj Close']
-               df.rename(i, inplace=True)
-               ativos_carteira_out = pd.concat([ativos_carteira_out,df], axis=1)
-               ativos_carteira_out.index.name='Date'
-            #checando o dataframe
-            st.dataframe(ativos_carteira_out)
-            
-            #calculando os retornos     #Excluindo os NAN 
-            retorno_carteira_out = ativos_carteira_out.pct_change().dropna()
-            #Calcula o retorno e pega a covariancia
-            cov_out = retorno_carteira_out.cov()
-            
-           
-            
-            #Hierarchical Risk Parity 
-            #"Marcos López de Prado. 
-            #Building diversified portfolios that outperform out of sample. 
-            #The Journal of Portfolio Management, 42(4):59–69, 2016. 
-            #URL: https://jpm.pm-research.com/content/42/4/59, 
-            #arXiv:https://jpm.pm-research.com/content/42/4/59.full.pdf, 
-            #doi:10.3905/jpm.2016.42.4.059.""
-            
-            pd.options.display.float_format = ' {:.4%}'.format
-            
-            portfolio = rp.HCPortfolio(returns=retorno_carteira)
-            model = 'HRP'
-            codependence = 'pearson'
-            rm = 'MV'
-            rf = 0
-            linkage = 'single'
-            leaf_order = True
-            
-            pesos = portfolio.optimization(model=model,
-                                           codependence=codependence,
-                                           rm=rm,
-                                           rf=rf,
-                                           leaf_order=leaf_order)
-                        
-            
-            ax = rp.plot_dendrogram(returns=retorno_carteira,
-                          codependence='pearson',
-                          linkage='single',
-                          k=None,
-                          max_k=10,
-                          leaf_order=True,
-                          ax=None)
-            
-            plt.savefig('dendrogram')
-    
-            
-            ax = rp.plot_network(returns=retorno_carteira, codependence="pearson",
-                         linkage="ward", k=None, max_k=10,
-                         alpha_tail=0.05, leaf_order=True,
-                         kind='spring', ax=None)
-            plt.savefig('network')
-            
-            #Retorno Acumulado out of sample
-            fig_2, ax_2 = plt.subplots()
-            rp.plot_series(returns=retorno_carteira_out, w=pesos, cmap='tab20', 
-                           height=6, width=10,
-                           ax=None)
-            plt.savefig('cum_ret.png')
-            
-            #Gráfico de composição dos novos pesos antes da otimização
-            fig_2, ax_2 = plt.subplots(figsize=(6,2))
-            rp.plot_pie(w=pesos_in, title='Porfolio', height=6, width=10,
-                        cmap='tab20', 
-                        ax=None)
-            plt.savefig('portfolio_pesos_iniciais')
-            
-            
-            #Gráfico de composição dos novos pesos da carteira otimizada
-            
-            fig_3, ax_3 = plt.subplots(figsize=(6,2))
-            rp.plot_pie(w=pesos, title='Portfolio',
-                        height=6,
-                        width=10,
-                        cmap='tab20',
-                        ax=None)
-            plt.savefig('portfolio_pesos_otimizado')
-            
-            
-            ### Contribuição de risco por ativo
-            #Parâmetros do portfolio otimizado
-            
-            media_retorno = portfolio.mu
-            covariancia = portfolio.cov
-            retornos = portfolio.returns 
-    
-            #grafico de contribuição de medida de risco por ativo da cateira
-            
-            fig_4, ax_4 = plt.subplots(figsize=(6,2))
-            rp.plot_risk_con(w=pesos, 
-                             cov=cov_in,
-                             returns=retorno_carteira,
-                             rm=rm,
-                             rf=0,
-                             alpha=0.05,
-                             color='tab:blue',
-                             height=6,
-                             width=10,
-                             t_factor=252,
-                             ax=None)
-            plt.savefig('risk_contr_ativo_inicial')
-            
-            #Gráfico de contribuição de medida de risco por ativo carteira as is
-    
-            fig_5, ax_5 = plt.subplots(figsize=(6,2))
-            
-            rp.plot_risk_con(w=pesos, cov=cov_out, returns=retorno_carteira_out, rm=rm,
-                                  rf=0, alpha=0.05, color="tab:blue", height=6,
-                                  width=10, t_factor=252, ax=None)
-            plt.savefig('risk_cont_ativo_otimizado.png')
-    
-            #Histograma dos retornos do portfolio
-            
-            fig_6, ax_6 = plt.subplots()
-            
-            rp.plot_hist(returns=retorno_carteira, w=pesos_in, alpha=0.05, bins=50, height=6,
-                              width=10, ax=None)
-            plt.savefig('pf_returns_in.png');
-                    
-            #Histograma dos retornos do portfolio
-            
-            fig_7, ax_7 = plt.subplots()
-            
-            rp.plot_hist(returns=retorno_carteira_out,
-                         w=pesos, alpha=0.05, bins=50, height=6,
-                              width=10, ax=None);
-            plt.savefig('pf_returns_out.png')
-            
-            fig_8, ax_8 = plt.subplots(figsize=(6,2))
-            rp.plot_table(returns=retorno_carteira, w=pesos_in, MAR=0, alpha=0.05, ax=None)
-            plt.savefig('table_in.png');
-            
-            fig_9, ax_9 = plt.subplots(figsize=(6,2))
-            rp.plot_table(returns=retorno_carteira_out, w=pesos, MAR=0, alpha=0.05, ax=None)
-            plt.savefig('table_out.png');
-            
-            # 1. Setup básico do PDF
-            class CustomPDF(FPDF):
-                
-                def header(self):
-                    # definindo logo
-                    self.image('download (1).jpg', 10, 8, 33)
-                    self.set_font('Arial', 'B', 10)
-                    
-                    # Add texto resumo simples
-                    self.cell(150)
-                    self.cell(0, 5, 'Analise de Carteira', ln=1)
-                    
-                    # Line break
-                    self.ln(20)
-                    
-                def footer(self):
-                    #distancia mm
-                    self.set_y(-10)
-                    #fonte do rodapé
-                    self.set_font('Arial', 'I', 8)
-                    # Add a page number
-                    page = 'Page ' + str(self.page_no()) + '/{nb}'
-                    self.cell(0, 10, page, 0, 0, 'C')
-            
-    
-            #Criar o pdf
-            #DESCOBRIR COMO CENTRALIZAR OS DS GRÁFICOS E TEXTOS.... MENSURAR A ARQUITETURA ANTES
-            def create_pdf(pdf_path):
-                pdf = CustomPDF()
-                # Create the special value {nb}
-                pdf.alias_nb_pages()
-               # pdf = FPDF("P", "mm", "A4")
-                
-                #Adiciona uma nova pagina
-                pdf.add_page()
-             
-                #Setup da fonte
-                pdf.set_font('Arial', 'B', 16)
-                #2. Layout do PDF
-                pdf.cell(5,6,'Diagnóstico da sua Carteira')
-                #Quabra de linha
-                pdf.ln(20)
-                
-                #3. Tabela Performance
-                pdf.cell(5,7,'Como sua carteira performou de {} até {}'.format(data_inicial, data_final))
-                pdf.ln(8)
-                pdf.image('table_in.png', w=150, h=150)
-                pdf.ln(60)
-                
-                #4 tabela performance out-of-sample
-                pdf.cell(5, 7,'Como sua carteira performou de {} até {}'.format(data_final, data_final2))
-                pdf.ln(8)
-                pdf.image('table_out.png', w=100, h=150)
-                pdf.ln(20)
-                
-                #5 Retorno Acumuiado Carteira
-                pdf.cell(5, 7, 'Retorno Acumulado da Carteira de {} até {}'.format(data_final,data_final2))
-                pdf.ln(8)
-                pdf.image('cum_ret.png', w=120, h=70)
-                pdf.ln(10)
-                
-                #6 Pesos
-                pdf.cell(5, 7, "Pesos da Carteira Atual")
-                pdf.ln(8)
-                pdf.image('portfolio_pesos_iniciais.png', w=100, h=60)
-                pdf.ln(20)
-                
-                pdf.cell(5, 7, 'Pesos da Carteira Otimizada')
-                pdf.ln(8)
-                pdf.image('portfolio_pesos_otimizado.png', w=100, h=60)
-                pdf.ln(15)          
-                        
-                #7 Contribuição de risco por ativo
-                
-                pdf.cell(12, 7, "Contribuição de risco por ativo de {} ate {}".format(data_inicial, data_final))
-                pdf.ln(8)
-                pdf.image('risk_contr_ativo_inicial.png', w=150, h=70)
-                pdf.ln(15)
-                
-                pdf.cell(12, 7, "Contribuição de risco, na carteira sugerida,")
-                pdf.ln(8)
-                pdf.cell(12,7, " por ativo de {} ate {}".format(data_final,data_final2))
-                pdf.ln(8)
-                pdf.image('risk_cont_ativo_otimizado.png', w=150, h=70)
-                pdf.ln(20)
-                
-                #8 Histograma de retornos
-                
-                pdf.cell(12, 7, "Histograma de retornos de {} ate {}".format(data_inicial, data_final))
-                pdf.ln(8)
-                pdf.image('pf_returns_in.png', w=150, h=70)
-                pdf.ln(20)
+                libera_exportar = 0
+                #adaptação do codigo para array de pesos
+                peso_in = np.array(ativos_df["Peso%"])
                  
-                pdf.cell(12, 7, "Histograma de retornos, na carteira sugerida,")
-                pdf.ln(5)
-                pdf.cell(12, 7, "de {} ate {}".format(data_final,data_final2))
-                pdf.ln(8)
-                pdf.image('pf_returns_out.png', w=150, h=70)
-                pdf.ln(20)
+                #Definir a data inicial para puxar os dados
+                st.markdown('---')   
+                
+                #aqui ficavam as datas iniciais e finais da carteria basica de referencia
+          
+                #Acrescentando o .SA necessário para a leitura do yf
+                tickers = [i + '.SA' for i in ativos_df['Ativo']]
+                #criando o dataframe onde será armazenado
+                ativos_carteira = pd.DataFrame()
+                for i in tickers:
+             
+                   df = yf.download(i, start=data_inicial_carteira, end=data_final_carteira)['Adj Close']
+                   df.rename(i, inplace=True)
+                   ativos_carteira = pd.concat([ativos_carteira,df], axis=1)
+                   ativos_carteira.index.name='Date'
+                #checando o dataframe
+                st.dataframe(ativos_carteira)
+                
+                #calculando os retornos     #Excluindo os NAN 
+                retorno_carteira = ativos_carteira.pct_change().dropna()
+                #Calcula o retorno e pega a covariancia
+                cov_in = retorno_carteira.cov()
+                #montando a matriz de pesos e ativos
+                pesos_in = pd.DataFrame(data={'pesos_in':peso_in}, index=tickers)
+               
+                
+                #"""Proxima etapa - carteira de comparação, a out"""
+#as datas ficavam aqui antes. jogando para cima do 'rodar'
+                
+                #inicio para o download da segunda etapa
+                #Acrescentando o .SA necessário para a leitura do yf
+               # tickers = [i + '.SA' for i in ativos_df['Ativo']]
+                #criando o dataframe onde será armazenado
+                ativos_carteira_out = pd.DataFrame()
+                for i in tickers:
+                 
+                   df = yf.download(i, start=data_inicial2, end=data_final2)['Adj Close']
+                   df.rename(i, inplace=True)
+                   ativos_carteira_out = pd.concat([ativos_carteira_out,df], axis=1)
+                   ativos_carteira_out.index.name='Date'
+                #checando o dataframe
+                st.dataframe(ativos_carteira_out)
+                
+                #calculando os retornos     #Excluindo os NAN 
+                retorno_carteira_out = ativos_carteira_out.pct_change().dropna()
+                #Calcula o retorno e pega a covariancia
+                cov_out = retorno_carteira_out.cov()
+                
+               
+                
+                #Hierarchical Risk Parity 
+                #"Marcos López de Prado. 
+                #Building diversified portfolios that outperform out of sample. 
+                #The Journal of Portfolio Management, 42(4):59–69, 2016. 
+                #URL: https://jpm.pm-research.com/content/42/4/59, 
+                #arXiv:https://jpm.pm-research.com/content/42/4/59.full.pdf, 
+                #doi:10.3905/jpm.2016.42.4.059.""
+                
+                pd.options.display.float_format = ' {:.4%}'.format
+                
+                portfolio = rp.HCPortfolio(returns=retorno_carteira)
+                model = 'HRP'
+                codependence = 'pearson'
+                rm = 'MV'
+                rf = 0
+                linkage = 'single'
+                leaf_order = True
+                
+                pesos = portfolio.optimization(model=model,
+                                               codependence=codependence,
+                                               rm=rm,
+                                               rf=rf,
+                                               leaf_order=leaf_order)
+                            
+                
+                ax = rp.plot_dendrogram(returns=retorno_carteira,
+                              codependence='pearson',
+                              linkage='single',
+                              k=None,
+                              max_k=10,
+                              leaf_order=True,
+                              ax=None)
+                
+                plt.savefig('dendrogram')
+        
+                
+                ax = rp.plot_network(returns=retorno_carteira, codependence="pearson",
+                             linkage="ward", k=None, max_k=10,
+                             alpha_tail=0.05, leaf_order=True,
+                             kind='spring', ax=None)
+                plt.savefig('network')
+                
+                #Retorno Acumulado out of sample
+                fig_2, ax_2 = plt.subplots()
+                rp.plot_series(returns=retorno_carteira_out, w=pesos, cmap='tab20', 
+                               height=6, width=10,
+                               ax=None)
+                plt.savefig('cum_ret.png')
+                
+                #Gráfico de composição dos novos pesos antes da otimização
+                fig_2, ax_2 = plt.subplots(figsize=(6,2))
+                rp.plot_pie(w=pesos_in, title='Porfolio', height=6, width=10,
+                            cmap='tab20', 
+                            ax=None)
+                plt.savefig('portfolio_pesos_iniciais')
                 
                 
-                # 9. Disclaimer
-                pdf.set_font('Times', '', 6)
-                pdf.cell(5, 2, 'Relatório construído com a biblioteca RiskFolio https://riskfolio-lib.readthedocs.io/en/latest/index.html')
+                #Gráfico de composição dos novos pesos da carteira otimizada
+                
+                fig_3, ax_3 = plt.subplots(figsize=(6,2))
+                rp.plot_pie(w=pesos, title='Portfolio',
+                            height=6,
+                            width=10,
+                            cmap='tab20',
+                            ax=None)
+                plt.savefig('portfolio_pesos_otimizado')
                 
                 
-                # 10. Output do PDF file
-                pdf.output('diagnostico_de_carteira.pdf', 'F')
-            
-            create_pdf('diagnostico_de_carteira.pdf')
-            with open("diagnostico_de_carteira.pdf", "rb") as pdf_file:
-                PDFbyte = pdf_file.read()
-            """ 
-            A próxima etapa será realizar a exportação do relatório para analisar
-            os resultados. 
-            Selecione para realizar o download.
-            """
-            st.download_button(label="Download do Relatório",
-                            data=PDFbyte,
-                            file_name="diagnostico_de_carteira.pdf",
-                            mime='application/octet-stream')
+                ### Contribuição de risco por ativo
+                #Parâmetros do portfolio otimizado
+                
+                media_retorno = portfolio.mu
+                covariancia = portfolio.cov
+                retornos = portfolio.returns 
+        
+                #grafico de contribuição de medida de risco por ativo da cateira
+                
+                fig_4, ax_4 = plt.subplots(figsize=(6,2))
+                rp.plot_risk_con(w=pesos, 
+                                 cov=cov_in,
+                                 returns=retorno_carteira,
+                                 rm=rm,
+                                 rf=0,
+                                 alpha=0.05,
+                                 color='tab:blue',
+                                 height=6,
+                                 width=10,
+                                 t_factor=252,
+                                 ax=None)
+                plt.savefig('risk_contr_ativo_inicial')
+                
+                #Gráfico de contribuição de medida de risco por ativo carteira as is
+        
+                fig_5, ax_5 = plt.subplots(figsize=(6,2))
+                
+                rp.plot_risk_con(w=pesos, cov=cov_out, returns=retorno_carteira_out, rm=rm,
+                                      rf=0, alpha=0.05, color="tab:blue", height=6,
+                                      width=10, t_factor=252, ax=None)
+                plt.savefig('risk_cont_ativo_otimizado.png')
+        
+                #Histograma dos retornos do portfolio
+                
+                fig_6, ax_6 = plt.subplots()
+                
+                rp.plot_hist(returns=retorno_carteira, w=pesos_in, alpha=0.05, bins=50, height=6,
+                                  width=10, ax=None)
+                plt.savefig('pf_returns_in.png');
+                        
+                #Histograma dos retornos do portfolio
+                
+                fig_7, ax_7 = plt.subplots()
+                
+                rp.plot_hist(returns=retorno_carteira_out,
+                             w=pesos, alpha=0.05, bins=50, height=6,
+                                  width=10, ax=None);
+                plt.savefig('pf_returns_out.png')
+                
+                fig_8, ax_8 = plt.subplots(figsize=(6,2))
+                rp.plot_table(returns=retorno_carteira, w=pesos_in, MAR=0, alpha=0.05, ax=None)
+                plt.savefig('table_in.png');
+                
+                fig_9, ax_9 = plt.subplots(figsize=(6,2))
+                rp.plot_table(returns=retorno_carteira_out, w=pesos, MAR=0, alpha=0.05, ax=None)
+                plt.savefig('table_out.png');
+                
+                # 1. Setup básico do PDF
+                class CustomPDF(FPDF):
+                    
+                    def header(self):
+                        # definindo logo
+                        self.image('download (1).jpg', 10, 8, 33)
+                        self.set_font('Arial', 'B', 10)
+                        
+                        # Add texto resumo simples
+                        self.cell(150)
+                        self.cell(0, 5, 'Analise de Carteira', ln=1)
+                        
+                        # Line break
+                        self.ln(20)
+                        
+                    def footer(self):
+                        #distancia mm
+                        self.set_y(-10)
+                        #fonte do rodapé
+                        self.set_font('Arial', 'I', 8)
+                        # Add a page number
+                        page = 'Page ' + str(self.page_no()) + '/{nb}'
+                        self.cell(0, 10, page, 0, 0, 'C')
+                
+        
+                #Criar o pdf
+                #DESCOBRIR COMO CENTRALIZAR OS DS GRÁFICOS E TEXTOS.... MENSURAR A ARQUITETURA ANTES
+                def create_pdf(pdf_path):
+                    pdf = CustomPDF()
+                    # Create the special value {nb}
+                    pdf.alias_nb_pages()
+                   # pdf = FPDF("P", "mm", "A4")
+                    
+                    #Adiciona uma nova pagina
+                    pdf.add_page()
+                 
+                    #Setup da fonte
+                    pdf.set_font('Arial', 'B', 16)
+                    #2. Layout do PDF
+                    pdf.cell(5,6,'Diagnóstico da sua Carteira')
+                    #Quabra de linha
+                    pdf.ln(20)
+                    
+                    #3. Tabela Performance
+                    pdf.cell(5,7,'Como sua carteira performou de {} até {}'.format(data_inicial_carteira, data_final_carteira))
+                    pdf.ln(8)
+                    pdf.image('table_in.png', w=150, h=150)
+                    pdf.ln(60)
+                    
+                    #4 tabela performance out-of-sample
+                    pdf.cell(5, 7,'Como sua carteira performou de {} até {}'.format(data_final_carteira, data_final2))
+                    pdf.ln(8)
+                    pdf.image('table_out.png', w=100, h=150)
+                    pdf.ln(20)
+                    
+                    #5 Retorno Acumuiado Carteira
+                    pdf.cell(5, 7, 'Retorno Acumulado da Carteira de {} até {}'.format(data_final_carteira,data_final2))
+                    pdf.ln(8)
+                    pdf.image('cum_ret.png', w=120, h=70)
+                    pdf.ln(10)
+                    
+                    #6 Pesos
+                    pdf.cell(5, 7, "Pesos da Carteira Atual")
+                    pdf.ln(8)
+                    pdf.image('portfolio_pesos_iniciais.png', w=100, h=60)
+                    pdf.ln(20)
+                    
+                    pdf.cell(5, 7, 'Pesos da Carteira Otimizada')
+                    pdf.ln(8)
+                    pdf.image('portfolio_pesos_otimizado.png', w=100, h=60)
+                    pdf.ln(15)          
+                            
+                    #7 Contribuição de risco por ativo
+                    
+                    pdf.cell(12, 7, "Contribuição de risco por ativo de {} ate {}".format(data_inicial_carteira, data_final_carteira))
+                    pdf.ln(8)
+                    pdf.image('risk_contr_ativo_inicial.png', w=150, h=70)
+                    pdf.ln(15)
+                    
+                    pdf.cell(12, 7, "Contribuição de risco, na carteira sugerida,")
+                    pdf.ln(8)
+                    pdf.cell(12,7, " por ativo de {} ate {}".format(data_final_carteira,data_final2))
+                    pdf.ln(8)
+                    pdf.image('risk_cont_ativo_otimizado.png', w=150, h=70)
+                    pdf.ln(20)
+                    
+                    #8 Histograma de retornos
+                    
+                    pdf.cell(12, 7, "Histograma de retornos de {} ate {}".format(data_inicial_carteira, data_final_carteira))
+                    pdf.ln(8)
+                    pdf.image('pf_returns_in.png', w=150, h=70)
+                    pdf.ln(20)
+                     
+                    pdf.cell(12, 7, "Histograma de retornos, na carteira sugerida,")
+                    pdf.ln(5)
+                    pdf.cell(12, 7, "de {} ate {}".format(data_final_carteira,data_final2))
+                    pdf.ln(8)
+                    pdf.image('pf_returns_out.png', w=150, h=70)
+                    pdf.ln(20)
+                    
+                    
+                    # 9. Disclaimer
+                    pdf.set_font('Times', '', 6)
+                    pdf.cell(5, 2, 'Relatório construído com a biblioteca RiskFolio https://riskfolio-lib.readthedocs.io/en/latest/index.html')
+                    
+                    
+                    # 10. Output do PDF file
+                    pdf.output('diagnostico_de_carteira.pdf', 'F')
+                
+                create_pdf('diagnostico_de_carteira.pdf')
+                with open("diagnostico_de_carteira.pdf", "rb") as pdf_file:
+                    PDFbyte = pdf_file.read()
+                
+                libera_exportar = 1    
+                """ 
+                A próxima etapa será realizar a exportação do relatório para analisar
+                os resultados. 
+                Selecione para realizar o download.
+                """
+                if libera_exportar == 1:            
+                    if st.download_button(label="Download do Relatório",
+                                        data=PDFbyte,
+                                        file_name="diagnostico_de_carteira.pdf",
+                                        mime='application/octet-stream'):
+                        st.write('Pronto!')    
 
-
+           
 
 
 "------------------------------"
@@ -945,22 +969,22 @@ def recogn():
     st.markdown('---')
     st.title('Realize aqui o reconhecimento entre cães e gatos')
     st.markdown('---')
-    with st.expander('Tire uma foto (n funciona em celular ainda) - demora um pouco', expanded=True):
+    with st.expander('Tire uma foto (cão ou gato)', expanded=True):
         img_file_buffer = st.camera_input("Tire uma foto")
     if img_file_buffer == None:
         st.write('Você não tirou uma foto, então faça upload de uma imagem.')
         
-    st.subheader("Escolha uma imagem no formato de jpg ou png para testar")
+    st.subheader("Escolha uma imagem (cachorro ou gato) no formato de jpg ou png para testar")
     arquivo = st.file_uploader('Faça o upload do arquivo', type=['jpg','png'])
 
     #poder regular aqtd de epocas q ele vai treinar
     #epochs = st.number_input('Insira a quantidade de epochs 1 a 5', int() , step=1)
     #st.write('The current number is ', epochs)
     st.markdown('---')
-    seguir_calculo = st.checkbox('Protótipo, inicie os cáculos:')
+    seguir_calculo = st.button('Executar os cáculos:')
     if seguir_calculo and (arquivo!=None or img_file_buffer!=None):
-        st.write('você precisas selecionar uma imagem')
-        with st.spinner('Atualizando - leva cerca de 10 min...'):
+        st.write('você precisa selecionar uma imagem')
+        with st.spinner('Atualizando - aguarde...'):
             with st.expander('Ao selecionar, vai rodar e demora um pouco. Então aguarde.', expanded=True):
                 #ACRESCENTANDO O '.SA' PARA YF ENTENDER OS ATIVOS
                
@@ -991,7 +1015,7 @@ def recogn():
                 
                     prediction = model.predict(image)[0][0]
                 
-                    st.write('Prediction: {0} | {1}'.format(prediction, ('cat' if prediction < 0.5 else 'dog')))
+                    st.write('Pelos cálculos: {0} | você enviou uma imagem de {1}'.format(prediction, ('gatinho!' if prediction < 0.5 else 'cachorro!')))
                 
                 #@st.cache(ttl=1*2*60)
                 def predict_url(image_fname, image_origin):
