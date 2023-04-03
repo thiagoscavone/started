@@ -4,7 +4,7 @@ streamlit==1.15.2
 yfinance==0.1.87
 seaborn==0.12.1
 fundamentus==0.2.0
-vectorbt==0.24.3
+vectorbt==0.24.5
 FPDF>=1.7.2
 numpy>=1.17.0
 scipy>=1.0.1
