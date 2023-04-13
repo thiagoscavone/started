@@ -807,6 +807,7 @@ def otimiza():
                                                leaf_order=leaf_order)
                 'Peso calculado da RiskFolio'            
                 pesos
+                st.write('A soma está em: ',100*pesos["weights"].sum(),'%')
                 ax = rp.plot_dendrogram(returns=retorno_carteira,
                               codependence='pearson',
                               linkage='single',
