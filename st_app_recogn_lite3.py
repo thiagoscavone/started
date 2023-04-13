@@ -734,7 +734,7 @@ def otimiza():
                 ativos_df
              
                 peso_in = np.array(ativos_df["Pesos"])
-                st.write(type(peso_in))
+                
                  
                 
                 
