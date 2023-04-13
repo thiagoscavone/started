@@ -604,11 +604,11 @@ def otimiza():
         
     '---------------------------------------------------'    
     tabela = pd.DataFrame(tabela)
-    st.write(type(tabela['Pesos']))
-    #tabela['Pesos'] = float(tabela['Pesos'])
-    '---------------------------------------------------'
-    st.write(type(tabela['Pesos']))
-    st.dataframe(tabela)
+    #st.write(type(tabela['Pesos']))
+    ##tabela['Pesos'] = float(tabela['Pesos'])
+    #'---------------------------------------------------'
+    #st.write(type(tabela['Pesos']))
+    #st.dataframe(tabela)
     
     
     """
