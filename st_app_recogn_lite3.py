@@ -611,10 +611,10 @@ def otimiza():
     #st.dataframe(tabela)
     
     
-     if len(tabela) > 0: #is not None:
+    if len(tabela) > 0: #is not None:
             teste_100 = (tabela["Pesos"].sum())
             st.write('A soma está em: ',tabela["Pesos"].sum(),'%')            
-    #if get_data() == []:
+  
     if len(tabela) == 0:
            st.warning('Selecione os ativos somando até 100%') 
     if teste_100 > 100:
