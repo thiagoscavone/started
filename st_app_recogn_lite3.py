@@ -750,7 +750,7 @@ def otimiza():
                 'covariância'
                 cov_in
                 'Pesos'
-                pesos_in
+                pesos_in/100 # no novo codigo precisa reduzir o percentual para decimal.
                 
                 
                 #"""Proxima etapa - carteira de comparação, a out"""
