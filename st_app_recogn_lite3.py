@@ -515,7 +515,7 @@ def longshort():
                 tickers_coluna = pd.Index([ativoA, ativoB], name='tickers')
                 vbt_ordem = pd.DataFrame(index=ativos.index, columns=tickers_coluna)
                 
-                st.write((vbt_ordem[~vbt_ordem.isnull().any(axis=1)])
+                st.write(vbt_ordem[~vbt_ordem.isnull().any(axis=1)])
                 vbt_ordem[ativoA] = np.nan
                 vbt_ordem[ativoB] = np.nan
                 vbt_ordem.loc[vbt_sinal_short, ativoA] = -PCT_ORDEM1
