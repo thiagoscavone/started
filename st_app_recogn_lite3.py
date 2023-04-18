@@ -515,7 +515,7 @@ def longshort():
                 tickers_coluna = pd.Index([ativoA, ativoB], name='tickers')
                 vbt_ordem = pd.DataFrame(index=ativos.index, columns=tickers_coluna)
                 
-                st.write(vbt_ordem[~vbt_ordem.isnull().any(axis=1)])
+                #st.write(vbt_ordem[~vbt_ordem.isnull().any(axis=1)])
                 vbt_ordem[ativoA] = np.nan
                 vbt_ordem[ativoB] = np.nan
                 vbt_ordem.loc[vbt_sinal_short, ativoA] = -PCT_ORDEM1
@@ -525,7 +525,7 @@ def longshort():
 
                 
                 vbt_ordem = vbt_ordem.vbt.fshift(1)
-                st.write(vbt_ordem.head())
+                st.write(vbt_ordem[~vbt_ordem.isnull().any(axis=1)])
                 
                 #eu criei duas constantes para gerar o gráfico do desvio padrão anterior, precisa tirar para dar certo o calculo!!!
                 ativos = ativos.drop(['cte','cte2'], axis=1)
