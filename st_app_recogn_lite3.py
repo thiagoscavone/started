@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-abrir tools, preference, interpreter mudar de 
-default para para  a folio
-'.......\envs\streamlit_folio\python.exe'
-cd - entrar na pasta onde esta o arquivo
-chamar o streamlit com o arquivo.
-cd Google Drive\Codigos\app_reconhecimento
-cd Google Drive\Codigos\git\started
-streamlit run ./st_app_recogn_lite3.py
+
 """
 
 import streamlit as st
