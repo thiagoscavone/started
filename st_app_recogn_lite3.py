@@ -1069,7 +1069,7 @@ def recogn():
                 image_size = (image_width, image_height)
                 image_shape = image_size + (image_color_channel,)
               
-                @st.cache_resource
+                #@st.cache_resource
                 def load_my_model():
                     model = tf.keras.models.load_model("model.h5")
                     return model
