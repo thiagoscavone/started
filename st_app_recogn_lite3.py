@@ -489,8 +489,8 @@ def longshort():
                 TAXA = 0.0001
                 PCT_ORDEM1 = 0.20
                 PCT_ORDEM2 = 0.20
-                BANDA_SUPERIOR = 1.0
-                BANDA_INFERIOR = -1.0
+                BANDA_SUPERIOR = 1.8
+                BANDA_INFERIOR = -1.8
                 
                 
                 
